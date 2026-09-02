@@ -1,0 +1,765 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monster Rush</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #111827;
+  color: white;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+#gameWrapper {
+  width: 100%;
+  max-width: 900px;
+  padding: 10px;
+}
+
+#topBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #1f2937;
+  padding: 12px 16px;
+  border-radius: 14px 14px 0 0;
+  border: 2px solid #374151;
+  font-weight: bold;
+  font-size: 17px;
+}
+
+#game {
+  position: relative;
+  width: 100%;
+  height: 600px;
+  background:
+    radial-gradient(circle at 20% 20%, #26334d 0 2px, transparent 3px),
+    radial-gradient(circle at 70% 40%, #26334d 0 2px, transparent 3px),
+    radial-gradient(circle at 40% 80%, #26334d 0 2px, transparent 3px),
+    #0b1220;
+  background-size: 120px 120px;
+  overflow: hidden;
+  border-left: 2px solid #374151;
+  border-right: 2px solid #374151;
+}
+
+#player {
+  position: absolute;
+  width: 42px;
+  height: 42px;
+  background: #38bdf8;
+  border: 3px solid white;
+  border-radius: 10px;
+  box-shadow: 0 0 18px rgba(56,189,248,.7);
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+}
+
+#player::before,
+#player::after {
+  content: "";
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  background: #111827;
+  border-radius: 50%;
+  top: 8px;
+}
+
+#player::before {
+  left: 8px;
+}
+
+#player::after {
+  right: 8px;
+}
+
+.monster {
+  position: absolute;
+  width: 38px;
+  height: 38px;
+  background: #ef4444;
+  border: 3px solid #fecaca;
+  border-radius: 50%;
+  box-shadow: 0 0 15px rgba(239,68,68,.7);
+  z-index: 4;
+}
+
+.monster::before,
+.monster::after {
+  content: "";
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  background: white;
+  border-radius: 50%;
+  top: 7px;
+}
+
+.monster::before {
+  left: 7px;
+}
+
+.monster::after {
+  right: 7px;
+}
+
+.coin {
+  position: absolute;
+  width: 25px;
+  height: 25px;
+  background: #facc15;
+  border: 3px solid #fef08a;
+  border-radius: 50%;
+  box-shadow: 0 0 15px rgba(250,204,21,.8);
+  z-index: 3;
+}
+
+.coin::after {
+  content: "$";
+  color: #854d0e;
+  font-size: 14px;
+  font-weight: bold;
+  position: absolute;
+  left: 5px;
+  top: 1px;
+}
+
+.power {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  background: #a855f7;
+  border: 3px solid #e9d5ff;
+  border-radius: 7px;
+  box-shadow: 0 0 18px rgba(168,85,247,.9);
+  z-index: 3;
+}
+
+.power::after {
+  content: "⚡";
+  position: absolute;
+  font-size: 16px;
+  left: 3px;
+  top: 1px;
+}
+
+#message {
+  position: absolute;
+  left: 50%;
+  top: 18px;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,.65);
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-weight: bold;
+  opacity: 0;
+  transition: opacity .2s;
+  z-index: 20;
+}
+
+#gameOver {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.82);
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  z-index: 50;
+}
+
+#gameOver h1 {
+  font-size: 46px;
+  margin-bottom: 10px;
+}
+
+#finalScore {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+button {
+  border: none;
+  border-radius: 12px;
+  padding: 13px 22px;
+  font-size: 17px;
+  font-weight: bold;
+  cursor: pointer;
+  background: #22c55e;
+  color: white;
+}
+
+button:hover {
+  filter: brightness(1.12);
+}
+
+#controls {
+  display: none;
+  position: absolute;
+  bottom: 15px;
+  left: 15px;
+  right: 15px;
+  justify-content: space-between;
+  z-index: 30;
+  pointer-events: none;
+}
+
+.controlGroup {
+  display: flex;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.controlButton {
+  width: 58px;
+  height: 58px;
+  padding: 0;
+  border-radius: 15px;
+  background: rgba(31,41,55,.85);
+  border: 2px solid #6b7280;
+  font-size: 25px;
+  touch-action: none;
+}
+
+#instructions {
+  text-align: center;
+  padding: 10px;
+  background: #1f2937;
+  border: 2px solid #374151;
+  border-top: none;
+  border-radius: 0 0 14px 14px;
+  font-size: 14px;
+  color: #d1d5db;
+}
+
+@media (max-width: 700px) {
+  #game {
+    height: 70vh;
+    min-height: 450px;
+  }
+
+  #topBar {
+    font-size: 14px;
+  }
+
+  #controls {
+    display: flex;
+  }
+
+  #instructions {
+    display: none;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div id="gameWrapper">
+
+  <div id="topBar">
+    <div>👾 MONSTER RUSH</div>
+    <div>❤️ <span id="lives">3</span></div>
+    <div>🪙 <span id="coins">0</span></div>
+    <div>🏆 <span id="score">0</span></div>
+    <div>⚡ Lv.<span id="level">1</span></div>
+  </div>
+
+  <div id="game">
+
+    <div id="player"></div>
+
+    <div id="message"></div>
+
+    <div id="gameOver">
+      <h1>GAME OVER 💀</h1>
+      <div id="finalScore">Score: 0</div>
+      <div id="finalCoins">Coins: 0</div>
+      <br>
+      <button onclick="restartGame()">🔄 PLAY AGAIN</button>
+    </div>
+
+    <div id="controls">
+
+      <div class="controlGroup">
+        <button class="controlButton" id="leftBtn">⬅️</button>
+        <button class="controlButton" id="rightBtn">➡️</button>
+      </div>
+
+      <div class="controlGroup">
+        <button class="controlButton" id="upBtn">⬆️</button>
+        <button class="controlButton" id="downBtn">⬇️</button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div id="instructions">
+    🎮 Use <b>WASD</b> or <b>Arrow Keys</b> to move • Collect 🪙 • Avoid 👾 • Grab ⚡ power-ups
+  </div>
+
+</div>
+
+<script>
+const game = document.getElementById("game");
+const player = document.getElementById("player");
+
+const scoreDisplay = document.getElementById("score");
+const coinsDisplay = document.getElementById("coins");
+const livesDisplay = document.getElementById("lives");
+const levelDisplay = document.getElementById("level");
+
+const gameOverScreen = document.getElementById("gameOver");
+const finalScore = document.getElementById("finalScore");
+const finalCoins = document.getElementById("finalCoins");
+const message = document.getElementById("message");
+
+let playerX = 0;
+let playerY = 0;
+
+let score = 0;
+let coins = 0;
+let lives = 3;
+let level = 1;
+
+let speed = 4;
+let gameRunning = true;
+
+let monsters = [];
+let coinObjects = [];
+let powerObjects = [];
+
+let keys = {};
+
+let lastTime = performance.now();
+let monsterTimer = 0;
+let coinTimer = 0;
+let powerTimer = 0;
+let scoreTimer = 0;
+
+let invincibleUntil = 0;
+
+function resetPlayer() {
+  playerX = game.clientWidth / 2 - 21;
+  playerY = game.clientHeight / 2 - 21;
+
+  player.style.left = playerX + "px";
+  player.style.top = playerY + "px";
+}
+
+function randomPosition(size) {
+  return {
+    x: Math.random() * (game.clientWidth - size),
+    y: Math.random() * (game.clientHeight - size)
+  };
+}
+
+function createMonster() {
+
+  const monster = document.createElement("div");
+  monster.className = "monster";
+
+  const pos = randomPosition(38);
+
+  monster.style.left = pos.x + "px";
+  monster.style.top = pos.y + "px";
+
+  game.appendChild(monster);
+
+  monsters.push({
+    el: monster,
+    x: pos.x,
+    y: pos.y,
+    speed: 1.1 + level * 0.12
+  });
+}
+
+function createCoin() {
+
+  const coin = document.createElement("div");
+  coin.className = "coin";
+
+  const pos = randomPosition(25);
+
+  coin.style.left = pos.x + "px";
+  coin.style.top = pos.y + "px";
+
+  game.appendChild(coin);
+
+  coinObjects.push({
+    el: coin,
+    x: pos.x,
+    y: pos.y
+  });
+}
+
+function createPowerUp() {
+
+  const power = document.createElement("div");
+  power.className = "power";
+
+  const pos = randomPosition(28);
+
+  power.style.left = pos.x + "px";
+  power.style.top = pos.y + "px";
+
+  game.appendChild(power);
+
+  powerObjects.push({
+    el: power,
+    x: pos.x,
+    y: pos.y
+  });
+}
+
+function distance(x1, y1, x2, y2) {
+  const dx = x1 - x2;
+  const dy = y1 - y2;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+function showMessage(text) {
+
+  message.textContent = text;
+  message.style.opacity = "1";
+
+  setTimeout(() => {
+    message.style.opacity = "0";
+  }, 900);
+}
+
+function collectCoins() {
+
+  for (let i = coinObjects.length - 1; i >= 0; i--) {
+
+    const c = coinObjects[i];
+
+    if (
+      distance(
+        playerX + 21,
+        playerY + 21,
+        c.x + 12,
+        c.y + 12
+      ) < 35
+    ) {
+
+      c.el.remove();
+      coinObjects.splice(i, 1);
+
+      coins++;
+      score += 10;
+
+      coinsDisplay.textContent = coins;
+      scoreDisplay.textContent = score;
+
+      showMessage("+10 🪙");
+    }
+  }
+}
+
+function collectPowerUps() {
+
+  for (let i = powerObjects.length - 1; i >= 0; i--) {
+
+    const p = powerObjects[i];
+
+    if (
+      distance(
+        playerX + 21,
+        playerY + 21,
+        p.x + 14,
+        p.y + 14
+      ) < 38
+    ) {
+
+      p.el.remove();
+      powerObjects.splice(i, 1);
+
+      invincibleUntil = performance.now() + 5000;
+
+      player.style.background = "#facc15";
+
+      showMessage("⚡ INVINCIBLE!");
+
+      setTimeout(() => {
+        if (performance.now() > invincibleUntil) {
+          player.style.background = "#38bdf8";
+        }
+      }, 5200);
+    }
+  }
+}
+
+function hitMonster() {
+
+  if (performance.now() < invincibleUntil) {
+    return;
+  }
+
+  lives--;
+
+  livesDisplay.textContent = lives;
+
+  player.style.opacity = "0.3";
+
+  setTimeout(() => {
+    player.style.opacity = "1";
+  }, 300);
+
+  showMessage("OUCH! 💥");
+
+  if (lives <= 0) {
+    endGame();
+  }
+}
+
+function updateMonsters(delta) {
+
+  for (const m of monsters) {
+
+    const dx = playerX - m.x;
+    const dy = playerY - m.y;
+
+    const length = Math.sqrt(dx * dx + dy * dy);
+
+    if (length > 0) {
+      m.x += (dx / length) * m.speed * delta / 16;
+      m.y += (dy / length) * m.speed * delta / 16;
+    }
+
+    m.el.style.left = m.x + "px";
+    m.el.style.top = m.y + "px";
+
+    if (
+      distance(
+        playerX + 21,
+        playerY + 21,
+        m.x + 19,
+        m.y + 19
+      ) < 38
+    ) {
+
+      hitMonster();
+
+      m.x = Math.random() * (game.clientWidth - 38);
+      m.y = Math.random() * (game.clientHeight - 38);
+    }
+  }
+}
+
+function updatePlayer(delta) {
+
+  let dx = 0;
+  let dy = 0;
+
+  if (keys["ArrowLeft"] || keys["a"]) dx -= 1;
+  if (keys["ArrowRight"] || keys["d"]) dx += 1;
+  if (keys["ArrowUp"] || keys["w"]) dy -= 1;
+  if (keys["ArrowDown"] || keys["s"]) dy += 1;
+
+  if (dx !== 0 || dy !== 0) {
+
+    const length = Math.sqrt(dx * dx + dy * dy);
+
+    dx /= length;
+    dy /= length;
+
+    playerX += dx * speed * delta / 16;
+    playerY += dy * speed * delta / 16;
+  }
+
+  const maxX = game.clientWidth - 42;
+  const maxY = game.clientHeight - 42;
+
+  playerX = Math.max(0, Math.min(maxX, playerX));
+  playerY = Math.max(0, Math.min(maxY, playerY));
+
+  player.style.left = playerX + "px";
+  player.style.top = playerY + "px";
+}
+
+function updateGame(time) {
+
+  if (!gameRunning) return;
+
+  const delta = Math.min(time - lastTime, 50);
+  lastTime = time;
+
+  updatePlayer(delta);
+  updateMonsters(delta);
+
+  collectCoins();
+  collectPowerUps();
+
+  monsterTimer += delta;
+  coinTimer += delta;
+  powerTimer += delta;
+  scoreTimer += delta;
+
+  if (monsterTimer > Math.max(450, 1300 - level * 70)) {
+    createMonster();
+    monsterTimer = 0;
+  }
+
+  if (coinTimer > 1100) {
+    createCoin();
+    coinTimer = 0;
+  }
+
+  if (powerTimer > 9000) {
+    createPowerUp();
+    powerTimer = 0;
+  }
+
+  if (scoreTimer > 1000) {
+
+    score++;
+    scoreDisplay.textContent = score;
+
+    scoreTimer = 0;
+
+    const newLevel = Math.floor(score / 100) + 1;
+
+    if (newLevel > level) {
+
+      level = newLevel;
+
+      levelDisplay.textContent = level;
+
+      showMessage("LEVEL " + level + "! 🔥");
+
+      speed += 0.25;
+    }
+  }
+
+  requestAnimationFrame(updateGame);
+}
+
+function endGame() {
+
+  gameRunning = false;
+
+  finalScore.textContent = "Score: " + score;
+  finalCoins.textContent = "Coins: " + coins;
+
+  gameOverScreen.style.display = "flex";
+}
+
+function restartGame() {
+
+  monsters.forEach(m => m.el.remove());
+  coinObjects.forEach(c => c.el.remove());
+  powerObjects.forEach(p => p.el.remove());
+
+  monsters = [];
+  coinObjects = [];
+  powerObjects = [];
+
+  score = 0;
+  coins = 0;
+  lives = 3;
+  level = 1;
+
+  speed = 4;
+
+  invincibleUntil = 0;
+
+  scoreDisplay.textContent = "0";
+  coinsDisplay.textContent = "0";
+  livesDisplay.textContent = "3";
+  levelDisplay.textContent = "1";
+
+  player.style.background = "#38bdf8";
+  player.style.opacity = "1";
+
+  gameOverScreen.style.display = "none";
+
+  resetPlayer();
+
+  gameRunning = true;
+
+  lastTime = performance.now();
+
+  requestAnimationFrame(updateGame);
+}
+
+document.addEventListener("keydown", e => {
+  keys[e.key] = true;
+
+  if (
+    ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "]
+    .includes(e.key)
+  ) {
+    e.preventDefault();
+  }
+});
+
+document.addEventListener("keyup", e => {
+  keys[e.key] = false;
+});
+
+function setupTouchButton(id, key) {
+
+  const button = document.getElementById(id);
+
+  button.addEventListener("pointerdown", e => {
+    e.preventDefault();
+    keys[key] = true;
+  });
+
+  button.addEventListener("pointerup", e => {
+    e.preventDefault();
+    keys[key] = false;
+  });
+
+  button.addEventListener("pointerleave", () => {
+    keys[key] = false;
+  });
+
+  button.addEventListener("pointercancel", () => {
+    keys[key] = false;
+  });
+}
+
+setupTouchButton("leftBtn", "ArrowLeft");
+setupTouchButton("rightBtn", "ArrowRight");
+setupTouchButton("upBtn", "ArrowUp");
+setupTouchButton("downBtn", "ArrowDown");
+
+window.addEventListener("resize", () => {
+  playerX = Math.min(playerX, game.clientWidth - 42);
+  playerY = Math.min(playerY, game.clientHeight - 42);
+});
+
+resetPlayer();
+
+createCoin();
+createCoin();
+createMonster();
+
+requestAnimationFrame(updateGame);
+</script>
+
+</body>
+</html>
+```
