@@ -3,7 +3,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
 <title>Monster Rush</title>
 
 <style>
@@ -12,41 +14,67 @@
   margin: 0;
   padding: 0;
   user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
 body {
   font-family: Arial, sans-serif;
-  background: #111827;
+  background: #080d18;
   color: white;
-  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  overflow: hidden;
+  touch-action: none;
 }
 
 #gameWrapper {
   width: 100%;
-  max-width: 900px;
-  padding: 10px;
+  max-width: 950px;
+  height: 100%;
+  max-height: 900px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
 }
 
 #topBar {
-  display: flex;
-  justify-content: space-between;
+  min-height: 58px;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr;
   align-items: center;
-  background: #1f2937;
-  padding: 12px 16px;
+  gap: 6px;
+  background: #182235;
+  border: 2px solid #34425c;
   border-radius: 14px 14px 0 0;
-  border: 2px solid #374151;
+  padding: 8px 12px;
   font-weight: bold;
-  font-size: 17px;
+  font-size: 16px;
+  z-index: 10;
+}
+
+.stat {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.title {
+  text-align: left;
+  font-size: 18px;
 }
 
 #game {
   position: relative;
   width: 100%;
-  height: 600px;
+  flex: 1;
+  min-height: 0;
   background:
     radial-gradient(circle at 20% 20%, #26334d 0 2px, transparent 3px),
     radial-gradient(circle at 70% 40%, #26334d 0 2px, transparent 3px),
@@ -54,8 +82,9 @@ body {
     #0b1220;
   background-size: 120px 120px;
   overflow: hidden;
-  border-left: 2px solid #374151;
-  border-right: 2px solid #374151;
+  border-left: 2px solid #34425c;
+  border-right: 2px solid #34425c;
+  touch-action: none;
 }
 
 #player {
@@ -66,10 +95,8 @@ body {
   border: 3px solid white;
   border-radius: 10px;
   box-shadow: 0 0 18px rgba(56,189,248,.7);
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
   z-index: 5;
+  transition: background .15s;
 }
 
 #player::before,
@@ -123,8 +150,8 @@ body {
 
 .coin {
   position: absolute;
-  width: 25px;
-  height: 25px;
+  width: 26px;
+  height: 26px;
   background: #facc15;
   border: 3px solid #fef08a;
   border-radius: 50%;
@@ -144,8 +171,8 @@ body {
 
 .power {
   position: absolute;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   background: #a855f7;
   border: 3px solid #e9d5ff;
   border-radius: 7px;
@@ -156,7 +183,7 @@ body {
 .power::after {
   content: "⚡";
   position: absolute;
-  font-size: 16px;
+  font-size: 17px;
   left: 3px;
   top: 1px;
 }
@@ -164,87 +191,115 @@ body {
 #message {
   position: absolute;
   left: 50%;
-  top: 18px;
+  top: 15px;
   transform: translateX(-50%);
-  background: rgba(0,0,0,.65);
-  padding: 8px 15px;
+  background: rgba(0,0,0,.7);
+  padding: 9px 16px;
   border-radius: 20px;
   font-weight: bold;
   opacity: 0;
   transition: opacity .2s;
   z-index: 20;
+  pointer-events: none;
+  white-space: nowrap;
 }
 
 #gameOver {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,.82);
+  background: rgba(0,0,0,.84);
   display: none;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   text-align: center;
   z-index: 50;
+  padding: 20px;
 }
 
 #gameOver h1 {
-  font-size: 46px;
-  margin-bottom: 10px;
+  font-size: clamp(34px, 9vw, 58px);
+  margin-bottom: 12px;
 }
 
-#finalScore {
-  font-size: 24px;
-  margin-bottom: 20px;
+#finalScore,
+#finalCoins {
+  font-size: clamp(18px, 5vw, 26px);
+  margin: 4px;
 }
 
 button {
   border: none;
-  border-radius: 12px;
-  padding: 13px 22px;
-  font-size: 17px;
+  border-radius: 14px;
+  font-size: 18px;
   font-weight: bold;
   cursor: pointer;
-  background: #22c55e;
   color: white;
+  touch-action: none;
 }
 
-button:hover {
-  filter: brightness(1.12);
+#restartButton {
+  background: #22c55e;
+  padding: 14px 25px;
+  margin-top: 18px;
+  min-width: 190px;
 }
 
 #controls {
-  display: none;
   position: absolute;
-  bottom: 15px;
-  left: 15px;
-  right: 15px;
-  justify-content: space-between;
+  inset: 0;
   z-index: 30;
   pointer-events: none;
 }
 
-.controlGroup {
-  display: flex;
-  gap: 8px;
+.controlButton {
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  background: rgba(31,41,55,.82);
+  border: 2px solid #64748b;
+  border-radius: 18px;
+  font-size: 27px;
   pointer-events: auto;
+  touch-action: none;
+  display: none;
 }
 
-.controlButton {
-  width: 58px;
-  height: 58px;
-  padding: 0;
-  border-radius: 15px;
-  background: rgba(31,41,55,.85);
-  border: 2px solid #6b7280;
-  font-size: 25px;
-  touch-action: none;
+.controlButton:active {
+  transform: scale(.94);
+  background: rgba(75,85,99,.95);
+}
+
+#leftBtn {
+  left: 18px;
+  bottom: 25px;
+}
+
+#rightBtn {
+  left: 164px;
+  bottom: 25px;
+}
+
+#upBtn {
+  right: 91px;
+  bottom: 98px;
+}
+
+#downBtn {
+  right: 91px;
+  bottom: 25px;
 }
 
 #instructions {
+  min-height: 42px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   text-align: center;
-  padding: 10px;
-  background: #1f2937;
-  border: 2px solid #374151;
+  padding: 8px;
+  background: #182235;
+  border: 2px solid #34425c;
   border-top: none;
   border-radius: 0 0 14px 14px;
   font-size: 14px;
@@ -252,21 +307,111 @@ button:hover {
 }
 
 @media (max-width: 700px) {
-  #game {
-    height: 70vh;
-    min-height: 450px;
+
+  #gameWrapper {
+    padding: 0;
+    max-height: none;
   }
 
   #topBar {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    grid-template-columns: 1.4fr 1fr 1fr 1fr 1fr;
+    min-height: 54px;
+    padding: 6px 5px;
+    font-size: 13px;
+  }
+
+  .title {
     font-size: 14px;
   }
 
-  #controls {
-    display: flex;
+  #game {
+    border-left: none;
+    border-right: none;
   }
 
   #instructions {
     display: none;
+  }
+
+  .controlButton {
+    display: block;
+  }
+}
+
+@media (max-width: 420px) {
+
+  #topBar {
+    font-size: 11px;
+  }
+
+  .title {
+    font-size: 12px;
+  }
+
+  .controlButton {
+    width: 58px;
+    height: 58px;
+    font-size: 23px;
+  }
+
+  #rightBtn {
+    left: 85px;
+  }
+
+  #upBtn {
+    right: 72px;
+    bottom: 88px;
+  }
+
+  #downBtn {
+    right: 72px;
+    bottom: 20px;
+  }
+
+  #leftBtn {
+    left: 15px;
+    bottom: 20px;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+
+  #topBar {
+    min-height: 44px;
+    padding: 4px 8px;
+  }
+
+  #gameWrapper {
+    padding: 0;
+  }
+
+  .controlButton {
+    width: 52px;
+    height: 52px;
+    font-size: 21px;
+  }
+
+  #leftBtn {
+    left: 12px;
+    bottom: 12px;
+  }
+
+  #rightBtn {
+    left: 74px;
+    bottom: 12px;
+  }
+
+  #upBtn {
+    right: 72px;
+    bottom: 70px;
+  }
+
+  #downBtn {
+    right: 72px;
+    bottom: 12px;
   }
 }
 </style>
@@ -277,11 +422,11 @@ button:hover {
 <div id="gameWrapper">
 
   <div id="topBar">
-    <div>👾 MONSTER RUSH</div>
-    <div>❤️ <span id="lives">3</span></div>
-    <div>🪙 <span id="coins">0</span></div>
-    <div>🏆 <span id="score">0</span></div>
-    <div>⚡ Lv.<span id="level">1</span></div>
+    <div class="stat title">👾 MONSTER RUSH</div>
+    <div class="stat">❤️ <span id="lives">3</span></div>
+    <div class="stat">🪙 <span id="coins">0</span></div>
+    <div class="stat">🏆 <span id="score">0</span></div>
+    <div class="stat">⚡ Lv.<span id="level">1</span></div>
   </div>
 
   <div id="game">
@@ -294,28 +439,20 @@ button:hover {
       <h1>GAME OVER 💀</h1>
       <div id="finalScore">Score: 0</div>
       <div id="finalCoins">Coins: 0</div>
-      <br>
-      <button onclick="restartGame()">🔄 PLAY AGAIN</button>
+      <button id="restartButton">🔄 PLAY AGAIN</button>
     </div>
 
     <div id="controls">
-
-      <div class="controlGroup">
-        <button class="controlButton" id="leftBtn">⬅️</button>
-        <button class="controlButton" id="rightBtn">➡️</button>
-      </div>
-
-      <div class="controlGroup">
-        <button class="controlButton" id="upBtn">⬆️</button>
-        <button class="controlButton" id="downBtn">⬇️</button>
-      </div>
-
+      <button class="controlButton" id="leftBtn">⬅️</button>
+      <button class="controlButton" id="rightBtn">➡️</button>
+      <button class="controlButton" id="upBtn">⬆️</button>
+      <button class="controlButton" id="downBtn">⬇️</button>
     </div>
 
   </div>
 
   <div id="instructions">
-    🎮 Use <b>WASD</b> or <b>Arrow Keys</b> to move • Collect 🪙 • Avoid 👾 • Grab ⚡ power-ups
+    🎮 WASD / Arrow Keys • 📱 Touch Controls • 🪙 Collect Coins • 👾 Avoid Monsters
   </div>
 
 </div>
@@ -333,6 +470,7 @@ const gameOverScreen = document.getElementById("gameOver");
 const finalScore = document.getElementById("finalScore");
 const finalCoins = document.getElementById("finalCoins");
 const message = document.getElementById("message");
+const restartButton = document.getElementById("restartButton");
 
 let playerX = 0;
 let playerY = 0;
@@ -352,12 +490,14 @@ let powerObjects = [];
 let keys = {};
 
 let lastTime = performance.now();
+
 let monsterTimer = 0;
 let coinTimer = 0;
 let powerTimer = 0;
 let scoreTimer = 0;
 
 let invincibleUntil = 0;
+let hitCooldownUntil = 0;
 
 function resetPlayer() {
   playerX = game.clientWidth / 2 - 21;
@@ -369,8 +509,8 @@ function resetPlayer() {
 
 function randomPosition(size) {
   return {
-    x: Math.random() * (game.clientWidth - size),
-    y: Math.random() * (game.clientHeight - size)
+    x: Math.max(5, Math.random() * (game.clientWidth - size - 10)),
+    y: Math.max(5, Math.random() * (game.clientHeight - size - 10))
   };
 }
 
@@ -399,7 +539,7 @@ function createCoin() {
   const coin = document.createElement("div");
   coin.className = "coin";
 
-  const pos = randomPosition(25);
+  const pos = randomPosition(26);
 
   coin.style.left = pos.x + "px";
   coin.style.top = pos.y + "px";
@@ -418,7 +558,7 @@ function createPowerUp() {
   const power = document.createElement("div");
   power.className = "power";
 
-  const pos = randomPosition(28);
+  const pos = randomPosition(30);
 
   power.style.left = pos.x + "px";
   power.style.top = pos.y + "px";
@@ -433,8 +573,10 @@ function createPowerUp() {
 }
 
 function distance(x1, y1, x2, y2) {
+
   const dx = x1 - x2;
   const dy = y1 - y2;
+
   return Math.sqrt(dx * dx + dy * dy);
 }
 
@@ -443,7 +585,9 @@ function showMessage(text) {
   message.textContent = text;
   message.style.opacity = "1";
 
-  setTimeout(() => {
+  clearTimeout(showMessage.timer);
+
+  showMessage.timer = setTimeout(() => {
     message.style.opacity = "0";
   }, 900);
 }
@@ -458,9 +602,9 @@ function collectCoins() {
       distance(
         playerX + 21,
         playerY + 21,
-        c.x + 12,
-        c.y + 12
-      ) < 35
+        c.x + 13,
+        c.y + 13
+      ) < 36
     ) {
 
       c.el.remove();
@@ -487,9 +631,9 @@ function collectPowerUps() {
       distance(
         playerX + 21,
         playerY + 21,
-        p.x + 14,
-        p.y + 14
-      ) < 38
+        p.x + 15,
+        p.y + 15
+      ) < 39
     ) {
 
       p.el.remove();
@@ -502,19 +646,29 @@ function collectPowerUps() {
       showMessage("⚡ INVINCIBLE!");
 
       setTimeout(() => {
-        if (performance.now() > invincibleUntil) {
+
+        if (performance.now() >= invincibleUntil) {
           player.style.background = "#38bdf8";
         }
-      }, 5200);
+
+      }, 5100);
     }
   }
 }
 
 function hitMonster() {
 
-  if (performance.now() < invincibleUntil) {
+  const now = performance.now();
+
+  if (now < invincibleUntil) {
     return;
   }
+
+  if (now < hitCooldownUntil) {
+    return;
+  }
+
+  hitCooldownUntil = now + 1000;
 
   lives--;
 
@@ -543,9 +697,13 @@ function updateMonsters(delta) {
     const length = Math.sqrt(dx * dx + dy * dy);
 
     if (length > 0) {
+
       m.x += (dx / length) * m.speed * delta / 16;
       m.y += (dy / length) * m.speed * delta / 16;
     }
+
+    m.x = Math.max(0, Math.min(game.clientWidth - 38, m.x));
+    m.y = Math.max(0, Math.min(game.clientHeight - 38, m.y));
 
     m.el.style.left = m.x + "px";
     m.el.style.top = m.y + "px";
@@ -561,8 +719,8 @@ function updateMonsters(delta) {
 
       hitMonster();
 
-      m.x = Math.random() * (game.clientWidth - 38);
-      m.y = Math.random() * (game.clientHeight - 38);
+      m.x = Math.random() * Math.max(1, game.clientWidth - 38);
+      m.y = Math.random() * Math.max(1, game.clientHeight - 38);
     }
   }
 }
@@ -588,8 +746,8 @@ function updatePlayer(delta) {
     playerY += dy * speed * delta / 16;
   }
 
-  const maxX = game.clientWidth - 42;
-  const maxY = game.clientHeight - 42;
+  const maxX = Math.max(0, game.clientWidth - 42);
+  const maxY = Math.max(0, game.clientHeight - 42);
 
   playerX = Math.max(0, Math.min(maxX, playerX));
   playerY = Math.max(0, Math.min(maxY, playerY));
@@ -603,6 +761,7 @@ function updateGame(time) {
   if (!gameRunning) return;
 
   const delta = Math.min(time - lastTime, 50);
+
   lastTime = time;
 
   updatePlayer(delta);
@@ -616,17 +775,23 @@ function updateGame(time) {
   powerTimer += delta;
   scoreTimer += delta;
 
-  if (monsterTimer > Math.max(450, 1300 - level * 70)) {
+  if (
+    monsterTimer >
+    Math.max(450, 1300 - level * 70)
+  ) {
+
     createMonster();
     monsterTimer = 0;
   }
 
   if (coinTimer > 1100) {
+
     createCoin();
     coinTimer = 0;
   }
 
   if (powerTimer > 9000) {
+
     createPowerUp();
     powerTimer = 0;
   }
@@ -638,7 +803,8 @@ function updateGame(time) {
 
     scoreTimer = 0;
 
-    const newLevel = Math.floor(score / 100) + 1;
+    const newLevel =
+      Math.floor(score / 100) + 1;
 
     if (newLevel > level) {
 
@@ -649,6 +815,10 @@ function updateGame(time) {
       showMessage("LEVEL " + level + "! 🔥");
 
       speed += 0.25;
+
+      monsters.forEach(m => {
+        m.speed += 0.08;
+      });
     }
   }
 
@@ -683,6 +853,12 @@ function restartGame() {
   speed = 4;
 
   invincibleUntil = 0;
+  hitCooldownUntil = 0;
+
+  monsterTimer = 0;
+  coinTimer = 0;
+  powerTimer = 0;
+  scoreTimer = 0;
 
   scoreDisplay.textContent = "0";
   coinsDisplay.textContent = "0";
@@ -703,42 +879,45 @@ function restartGame() {
   requestAnimationFrame(updateGame);
 }
 
-document.addEventListener("keydown", e => {
-  keys[e.key] = true;
+document.addEventListener("keydown", event => {
+
+  keys[event.key] = true;
 
   if (
-    ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "]
-    .includes(e.key)
+    [
+      "ArrowUp",
+      "ArrowDown",
+      "ArrowLeft",
+      "ArrowRight",
+      " "
+    ].includes(event.key)
   ) {
-    e.preventDefault();
+    event.preventDefault();
   }
 });
 
-document.addEventListener("keyup", e => {
-  keys[e.key] = false;
+document.addEventListener("keyup", event => {
+  keys[event.key] = false;
 });
 
 function setupTouchButton(id, key) {
 
   const button = document.getElementById(id);
 
-  button.addEventListener("pointerdown", e => {
-    e.preventDefault();
+  const start = event => {
+    event.preventDefault();
     keys[key] = true;
-  });
+  };
 
-  button.addEventListener("pointerup", e => {
-    e.preventDefault();
+  const stop = event => {
+    event.preventDefault();
     keys[key] = false;
-  });
+  };
 
-  button.addEventListener("pointerleave", () => {
-    keys[key] = false;
-  });
-
-  button.addEventListener("pointercancel", () => {
-    keys[key] = false;
-  });
+  button.addEventListener("pointerdown", start);
+  button.addEventListener("pointerup", stop);
+  button.addEventListener("pointercancel", stop);
+  button.addEventListener("pointerleave", stop);
 }
 
 setupTouchButton("leftBtn", "ArrowLeft");
@@ -746,9 +925,22 @@ setupTouchButton("rightBtn", "ArrowRight");
 setupTouchButton("upBtn", "ArrowUp");
 setupTouchButton("downBtn", "ArrowDown");
 
+restartButton.addEventListener("click", restartGame);
+
 window.addEventListener("resize", () => {
-  playerX = Math.min(playerX, game.clientWidth - 42);
-  playerY = Math.min(playerY, game.clientHeight - 42);
+
+  playerX = Math.max(
+    0,
+    Math.min(playerX, game.clientWidth - 42)
+  );
+
+  playerY = Math.max(
+    0,
+    Math.min(playerY, game.clientHeight - 42)
+  );
+
+  player.style.left = playerX + "px";
+  player.style.top = playerY + "px";
 });
 
 resetPlayer();
